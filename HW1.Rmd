@@ -1,0 +1,125 @@
+---
+title: "Самостоятельная работа 1"
+author: "Данные и матметоды в общественной географии"
+date: "2023-09-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries, include=FALSE}
+library(tidyverse)
+library(ggsci)
+library(ggthemes)
+```
+
+В этой работе вам на выбор дается два набора данных. Выполните задания к любому из них.
+
+### Датасет 1: статистика по электромобилям.
+
+Набор содержит данные об электромобилях, которые зарегистрированы в Департаменте лицензирования штата Вашингтон в США.
+
+Ссылка на набор данных и их описание:  
+<https://catalog.data.gov/dataset/electric-vehicle-population-data>.
+
+Скачайте файл с данными в формате csv, импортируйте в RStudio с помощью функции `read_csv()` из пакета dplyr.
+
+```{r data1, include=FALSE}
+electic_vehicle <- read_csv("Electric_Vehicle_Population_Data.csv")
+```
+
+
+#### Задание 1
+
+Сгруппируйте электромобили по году выпуска (`Model Year`) и воспроизведите график ниже:
+
+```{r ex1, echo=FALSE, fig.height=3.5, message=FALSE, warning=FALSE}
+electic_vehicle %>% 
+  filter(`Model Year` %in% 2010:2022) %>% 
+  group_by(`Model Year`) %>% 
+  count() %>% 
+  ggplot(aes(x = `Model Year`, y = n/1000))+
+  geom_area(alpha = 0.7, fill = "#666699")+
+  scale_x_continuous(name = "Год выпуска", breaks = 2010:2022, expand = c(0,0.2))+
+  scale_y_continuous(name = "Количество зарегистрированных\nэлектромобилей, тыс.", breaks = seq(0, 30, 5), expand = c(0,0), limits = c(0, 30))+
+  theme_bw(base_family = "Arial")+
+  theme(panel.grid.minor.x = element_blank(),
+        axis.title.x = element_text(vjust = -1.5),
+        axis.title.y = element_text(vjust = 1.5),
+        panel.grid.minor.y = element_blank())
+```
+
+*Подсказки:*  
+- для построения графика используйте `geom_area()`, настройте цвет и прозрачность заливки с помощью аргументов `fill` и `alpha`      
+- настройте оси x и y с помощью `scale_x_continuous()` и `scale_y_continuous()` соответственно  
+
+#### Задание 2
+
+Постройте график, который показывает, как менялась доля крупнейших компаний-производителей (`Make`) зарегистрированных автомобилей за последние пять лет. Используйте любой подходящий `geom_` и разбейте график по годам с помощью `facet_wrap()`.
+
+*Подсказки:*  
+- нужно создать отдельную колонку, к которой перезаписать значения из колонки `Make`, оставив названия крупейших производитей, а для остальных указать "Остальные". Используйте функции `case_when()` или `case_match()`.    
+- для отображения пропорций можно использовать разные виды графиков. Посмотрите примеры вот здесь: 
+<https://clauswilke.com/dataviz/directory-of-visualizations.html>
+
+### Датасет 2: торнадо в США (1950-2022)
+
+Набор содержит данные о торнадо, зарегистрированных Национальным управлением океанических и атмосферных исследований США в 1950-2022 гг.
+
+Ссылка на набор данных и их описание:  
+<https://www.spc.noaa.gov/wcm/>.
+
+Скачайте файл `1950-2022_actual_tornadoes.csv`, импортируйте в RStudio с помощью функции `read_csv()` из пакета dplyr.
+
+```{r data2, include=FALSE}
+tornadoes <- read_csv("1950-2022_actual_tornadoes.csv")
+```
+
+#### Задание 1
+
+Сгруппируйте торнадо по году  (`yr`) и мощности (`mag`) и воспроизведите график ниже:
+
+```{r ex2, echo=FALSE, fig.height=4, message=FALSE, warning=FALSE}
+
+tornadoes %>% 
+  group_by(yr, mag) %>% 
+  count() %>%
+  ungroup() %>% 
+  ggplot(aes(x = yr, y = n, fill = factor(mag, levels = rev(c(-9, 0:5)))))+
+  geom_col(position = "stack")+
+  scale_fill_brewer(name = "F-scale", palette = "Spectral", direction = 1)+
+  scale_y_continuous(name = "Annual count")+
+  scale_x_continuous(name = element_blank(), breaks = seq(1950, 2020, 10))+
+  ggtitle("Annual tornado counts and magnitude",
+          subtitle = "Data: NOOA's National Weather Center")
+
+```
+
+*Подсказки:*  
+- для построения графика используйте `geom_col()`     
+- настройте цвет с помощью `scale_fill_brewer`, цветовая палитра `Spectral`       
+- настройте оси x и y с помощью `scale_x_continuous()` и `scale_y_continuous()` соответственно  
+- добавьте заголовок и подзаголовок с помощью `ggtitle()`
+
+#### Задание 2
+
+Постройте график, который показывает, в какие сезоны года (месяцы) чаще всего происходят торнадо. Используйте любой подходящий `geom_`.
+
+*Подсказки:*  
+- наблюдения можно сгуппировать по месяцам (`mo`)     
+- можно использовать разные виды графиков. Посмотрите примеры вот здесь: 
+<https://clauswilke.com/dataviz/directory-of-visualizations.html>
+
+
+### Требования к работам
+
+Работа сдается в виде скрипта с приложенными к нему jpeg файлами.   
+Скрипт должен содержать код подгрузки библиотек, импорта данных, предобработки данных, создания графиков и их экспорта. Основные этапы снабжены комментариями.
+
+Работа оценивается по 10-балльной шкале:    
+- импорт и предобработка данных (4 балла)    
+- создание, оформление и экспорт графиков (4 балла)    
+- оформление кода (2 балла)
